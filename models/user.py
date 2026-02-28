@@ -1,86 +1,76 @@
-"""
-User model.
-Inherits from Person.
-Handles role-based users (admin, health_worker, community_user).
-Includes secure password handling, role validation, and serialization.
-"""
+# Represents system users and roles
 
-import uuid
 import hashlib
 from models.person import Person
 
-# Allowed roles for system users
-VALID_ROLES = {"admin", "health_worker", "community"}
-
 
 class User(Person):
-    def __init__(self, name, email, password, role="community", user_id=None, is_hashed=False):
+    """
+    Represents a system user.
+    Inherits from Person.
+    Supports password hashing and role validation.
+    """
 
-        super().__init__(name, email)
+    VALID_ROLES = ["community", "health_worker", "admin"]
 
-        # Generate unique ID
-        self._id = user_id or str(uuid.uuid4())
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        email: str,
+        password: str,
+        role: str,
+        region_id: str = None
+    ):
+        super().__init__(id, name)
 
-        # Defensive integrity check for role validity
-        if role not in VALID_ROLES:
+        if role not in self.VALID_ROLES:
             raise ValueError(
-                f"Invalid role: {role}. Must be one of {VALID_ROLES}"
-            )
-        self._role = role
+                f"Invalid role. Must be one of {self.VALID_ROLES}")
 
-        # Store password securely
-        self._password = (
-            password if is_hashed else self._hash_password(password)
-        )
+        self.email = email
+        self.password = password
+        self.role = role
+        self.region_id = region_id
 
-    # ---------------- Properties ----------------
-    @property
-    def id(self):
-        """Return unique user ID."""
-        return self._id
-
-    @property
-    def role(self):
-        """Return user role."""
-        return self._role
-
-    # ---------------- Password Handling ----------------
-    def _hash_password(self, raw_password: str) -> str:
-        """Hash password using SHA-256."""
-        return hashlib.sha256(raw_password.encode()).hexdigest()
+    def set_password(self, raw_password: str):
+        """
+        Hash and set the user's password.
+        """
+        self.password = hashlib.sha256(raw_password.encode()).hexdigest()
 
     def verify_password(self, raw_password: str) -> bool:
-        """Verify raw password against stored hash."""
-        return self._password == self._hash_password(raw_password)
+        """
+        Verify a raw password against the stored hash.
+        """
+        return self.password == hashlib.sha256(raw_password.encode()).hexdigest()
 
-    # ---------------- Serialization ----------------
     def to_dict(self) -> dict:
-        """Convert User object to dictionary for JSON storage."""
+        """
+        Convert user object to dictionary for JSON storage.
+        """
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "password": self._password,
-            "role": self.role
+            "password": self.password,
+            "role": self.role,
+            "region_id": self.region_id
         }
 
     @classmethod
     def from_dict(cls, data: dict):
-        """Recreate User object from stored dictionary."""
+        """
+        Create User object from dictionary.
+        """
         return cls(
-            data["name"],
-            data["email"],
-            data["password"],
-            data.get("role", "community"),
-            data.get("id"),
-            is_hashed=True  # Prevent double hashing
+            id=data["id"],
+            name=data["name"],
+            email=data["email"],
+            password=data["password"],
+            role=data["role"],
+            region_id=data.get("region_id")
         )
 
-    # ---------------- Utility Methods ----------------
-    def __repr__(self):
-        """Readable representation for debugging."""
-        return f"<User {self.name} ({self.role})>"
-
-    def __eq__(self, other):
-        """Equality check based on unique ID."""
-        return isinstance(other, User) and self.id == other.id
+    def __str__(self):
+        return f"{self.name} ({self.role})"
