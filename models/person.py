@@ -1,34 +1,30 @@
-"""
-Base Person class.
-Demonstrates inheritance and encapsulation.
-"""
-
+# Base class representing a generic person in the system
 
 class Person:
-    def __init__(self, name: str, email: str):
-        # Basic validation
-        if not name:
-            raise ValueError("Name cannot be empty.")
+    """
+    Base class for all person types in the system.
+    Demonstrates inheritance (User will inherit from this).
+    """
 
-        if "@" not in email:
-            raise ValueError("Invalid email format.")
+    def __init__(self, id: str, name: str):
+        self.id = id
+        self.name = name
 
-        # Encapsulated (protected) attributes
-        self._name = name
-        self._email = email
+    def to_dict(self) -> dict:
+        """
+        Convert object to dictionary for JSON storage.
+        """
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
-    # Getter for name
-    @property
-    def name(self):
-        """Return person's name."""
-        return self._name
-
-    # Getter for email
-    @property
-    def email(self):
-        """Return person's email."""
-        return self._email
-
-    def __str__(self):
-        """User-friendly string representation."""
-        return f"{self.name} ({self.email})"
+    @classmethod
+    def from_dict(cls, data: dict):
+        """
+        Create object from dictionary.
+        """
+        return cls(
+            id=data["id"],
+            name=data["name"]
+        )
