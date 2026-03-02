@@ -1,30 +1,48 @@
-# Base class representing a generic person in the system
+# models/person.py
 
 class Person:
     """
-    Base class for all person types in the system.
-    Demonstrates inheritance (User will inherit from this).
+    Base class representing a person in the system.
+    All user types inherit from this.
     """
-
-    def __init__(self, id: str, name: str):
-        self.id = id
+    
+    def __init__(self, person_id: str, name: str, email: str):
+        """
+        Initialize a Person with common attributes.
+        
+        Args:
+            person_id: Unique identifier (could be UUID or email-based)
+            name: Full name of the person
+            email: Email address (used for login)
+        """
+        self.id = person_id
         self.name = name
-
+        self.email = email.lower()  # Store email in lowercase for consistency
+    
+    def __str__(self) -> str:
+        """String representation of the person."""
+        return f"{self.name} ({self.email})"
+    
     def to_dict(self) -> dict:
         """
-        Convert object to dictionary for JSON storage.
+        Convert person object to dictionary for JSON serialization.
         """
         return {
             "id": self.id,
-            "name": self.name
+            "name": self.name,
+            "email": self.email
         }
-
+    
     @classmethod
     def from_dict(cls, data: dict):
         """
-        Create object from dictionary.
+        Create a Person instance from dictionary data.
+        
+        Args:
+            data: Dictionary containing person data
         """
         return cls(
-            id=data["id"],
-            name=data["name"]
+            person_id=data["id"],
+            name=data["name"],
+            email=data["email"]
         )
