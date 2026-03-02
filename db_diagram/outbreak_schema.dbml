@@ -1,0 +1,53 @@
+Enum user_role {
+  community
+  health_worker
+  admin
+}
+
+Enum classification_status {
+  suspected
+  confirmed
+  discarded
+}
+
+Enum patient_status {
+  under_treatment
+  recovered
+  deceased
+}
+
+Table users {
+  id integer [primary key]
+  name varchar [not null]
+  email varchar [unique, not null]
+  password_hash varchar [not null]
+  role user_role [not null]
+  created_at timestamp
+}
+
+Table regions {
+  id integer [primary key]
+  name varchar [not null, unique]
+  location varchar [not null]
+  created_at timestamp
+}
+
+Table cases {
+  id integer [primary key]
+  patient_name varchar [not null]
+  age integer
+  gender varchar
+  region_id integer [not null]
+  reported_by integer [not null]
+  date_reported date [not null]
+
+  classification_status classification_status [not null]
+  patient_status patient_status [not null]
+
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: cases.reported_by > users.id
+Ref: cases.region_id > regions.id
