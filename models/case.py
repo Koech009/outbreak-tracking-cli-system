@@ -1,117 +1,126 @@
-
+# models/case.py
+# Represents a disease outbreak case
 
 class Case:
-    
-    VALID_STATUSES = {"Suspected", "Confirmed", "Recovered", "Deceased"}
+    """
+    Represents a reported outbreak case.
 
-    #Define allowed transitions
-    ALLOWED_TRANSITIONS = {
-        "Suspected": {"Confirmed"},
-        "Confirmed": {"Recovered", "Deceased"},
-        "Recovered": set(),
-        "Deceased": set()
-    }
+    Relationships:
+    - Many cases belong to one Region (region_id)
+    - Many cases reported by one User (reported_by)
 
-    def __init__(self, case_id, disease_name, patient_code, patient_age, patient_gender, date_reported, region_id, assigned_officer, status="Suspected"):
-        self.__case_id = case_id
-        self.disease_name = disease_name
-        self.__patient_code = patient_code
-        self.__patient_age = patient_age
-        self.__patient_gender = patient_gender
-        self.__date_reported = date_reported
+    Fields:
+    - symptoms: list of reported symptoms (community user)
+    - possible_disease: suspected disease (community user)
+    - confirmed_disease: verified disease (health worker)
+    - classification_status: outbreak classification (suspected, confirmed, discarded)
+    - patient_status: patient outcome (under_treatment, recovered, deceased)
+    """
+
+    VALID_CLASSIFICATIONS = ["suspected", "confirmed", "discarded"]
+    VALID_PATIENT_STATUSES = ["under_treatment", "recovered", "deceased"]
+
+    def __init__(
+        self,
+        id: str,
+        patient_name: str,
+        age: int,
+        region_id: str,
+        reported_by: str,
+        date_reported: str,
+        classification_status: str = "suspected",
+        patient_status: str = "under_treatment",
+        symptoms=None,
+        possible_disease=None,
+        confirmed_disease=None
+    ):
+        if classification_status not in self.VALID_CLASSIFICATIONS:
+            raise ValueError(
+                f"Invalid classification status. Must be one of {self.VALID_CLASSIFICATIONS}"
+            )
+        if patient_status not in self.VALID_PATIENT_STATUSES:
+            raise ValueError(
+                f"Invalid patient status. Must be one of {self.VALID_PATIENT_STATUSES}"
+            )
+
+        self.id = id
+        self.patient_name = patient_name
+        self.age = age
         self.region_id = region_id
-        self.__assigned_officer = assigned_officer
-
-        if status not in Case.VALID_STATUSES:
-            raise ValueError("Invalid initial status")
-        
-        self.__status = status
-        
-
-        #Getters
-    @property
-    def case_id(self):
-        return self.__case_id
-    
-    @property
-    def patient_code(self):
-        return self.__patient_code
-    
-    @property
-    def patient_age(self):
-        return self.__patient_age
-    
-    @property
-    def patient_gender(self):
-        return self.__patient_gender
-    
-    @property
-    def date_reported(self):
-        return self.__date_reported
-
-    @property
-    def status(self):
-        return self.__status
-    
-    #Controlled mutations
-
-    def update_status(self, new_status):
-        if new_status not in Case.VALID_STATUSES:
-            raise ValueError("Invalid status")
-        
-        allowed = Case.ALLOWED_TRANSITIONS[self.__status]
-
-        if new_status not in allowed:
-            raise ValueError(f"Invalid transition from {self.__status} to {new_status}")
-        
-        self.__status = new_status
-
-    def set_patient_age(self, age):
-        if not isinstance(age, int) or age <= 0:
-            raise ValueError("Patient age must be a positive integer.")
-        
-        self.__patient_age = age
-
-    def set_patient_gender(self, gender):
-        valid_genders = {"Male", "Female", "Other"}
-        if gender not in valid_genders:
-            raise ValueError("Invalid gender.")
-        
-        self.__patient_gender = gender
+        self.reported_by = reported_by
+        self.date_reported = date_reported
+        self.classification_status = classification_status
+        self.patient_status = patient_status
+        self.symptoms = symptoms or []
+        self.possible_disease = possible_disease
+        self.confirmed_disease = confirmed_disease
 
 
-    #Serialization
+    # Helper Methods
 
-    def to_dict(self):
+    def update_classification(self, new_status: str):
+        #Update outbreak classification status.
+        if new_status not in self.VALID_CLASSIFICATIONS:
+            raise ValueError(
+                f"Invalid classification status. Must be one of {self.VALID_CLASSIFICATIONS}"
+            )
+        self.classification_status = new_status
+
+    def update_patient_status(self, new_status: str):
+        #Update patient outcome status.
+        if new_status not in self.VALID_PATIENT_STATUSES:
+            raise ValueError(
+                f"Invalid patient status. Must be one of {self.VALID_PATIENT_STATUSES}"
+            )
+        self.patient_status = new_status
+
+    def confirm_disease(self, disease_name: str):
+        #Health worker confirms suspected disease.
+        if not disease_name:
+            raise ValueError("Confirmed disease name cannot be empty.")
+        self.confirmed_disease = disease_name
+        self.classification_status = "confirmed"
+
+    def to_dict(self) -> dict:
+        #Convert Case object to dictionary for JSON storage.
         return {
-            "case_id": self.__case_id,
-            "disease_name": self.disease_name,
-            "patient_code": self.__patient_code,
-            "patient_age": self.__patient_age,
-            "patient_gender": self.__patient_gender,
-            "date_reported": self.__date_reported,
+            "id": self.id,
+            "patient_name": self.patient_name,
+            "age": self.age,
             "region_id": self.region_id,
-            "assigned_officer": self.__assigned_officer,
-            "status": self.__status
+            "reported_by": self.reported_by,
+            "date_reported": self.date_reported,
+            "classification_status": self.classification_status,
+            "patient_status": self.patient_status,
+            "symptoms": self.symptoms,
+            "possible_disease": self.possible_disease,
+            "confirmed_disease": self.confirmed_disease,
         }
-    
+
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict):
+        #Recreate Case object from stored dictionary.
         return cls(
-            case_id=data["case_id"],
-            disease_name=data["disease_name"],
-            patient_code=data["patient_code"],
-            patient_age=data["patient_age"],
-            patient_gender=data["patient_gender"],
-            date_reported=data["date_reported"],
+            id=data["id"],
+            patient_name=data["patient_name"],
+            age=data["age"],
             region_id=data["region_id"],
-            assigned_officer=data.get("assigned_officer"),
-            status=data.get("status", "Suspected")
+            reported_by=data["reported_by"],
+            date_reported=data["date_reported"],
+            classification_status=data.get(
+                "classification_status", "suspected"),
+            patient_status=data.get("patient_status", "under_treatment"),
+            symptoms=data.get("symptoms", []),
+            possible_disease=data.get("possible_disease"),
+            confirmed_disease=data.get("confirmed_disease"),
         )
-    
-    #String representation
-    def display_summary(self):
-        return f"{self.__case_id} | {self.disease_name} | {self.__status}"
 
-        
-
+    def __str__(self):
+        return (
+            f"Case[{self.id}] - {self.patient_name}, "
+            f"Symptoms: {', '.join(self.symptoms) if self.symptoms else 'None'}, "
+            f"Possible: {self.possible_disease or 'N/A'}, "
+            f"Confirmed: {self.confirmed_disease or 'N/A'}, "
+            f"Classification: {self.classification_status}, "
+            f"Patient Status: {self.patient_status} ({self.date_reported})"
+        )
