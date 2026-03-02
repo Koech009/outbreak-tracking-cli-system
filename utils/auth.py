@@ -1,60 +1,65 @@
-# 4:20–4:55 | Build the Registration Flow
-# Your register_user function needs to: collect a name, email, password, and role,
-# validate that the email isn't already taken (by loading users.json),
-# hash the password,
-# construct a user dictionary,
-# and save it back to the file.
-# A few Python things to really understand here: 
-# you'll be calling your teammate's file_handler.py functions (load_json, save_json). 
-# What does it mean to depend on another module? 
-    # it means that i would need to import it...?
-# How do you import it? 
-    # by writing from. module_name import function names
-# Think about what happens if the file doesn't exist yet — does load_json handle that, or should auth.py guard against it?
-    #load_json handles it within its logic by returning an empty list if there's a filenotfounderror butttt is an empty list 
-    # good ux or does the user never actually see that and is that just developer side...? 
-    # also expound to me on how auth.py would guard against this?
-# Also think about input validation as a first-class concern. 
-# A function like is_valid_email(email) that returns a boolean is a clean, testable way to handle this. 
-# Write it as a small helper inside auth.py. What makes an email valid? At minimum, it contains @ and a . after it.
-
-from .file_handler import load_json, save_json
+from utils.file_handler import load_json, save_json
 import hashlib, os
+from datetime import datetime
 
 def is_valid_email(email):
-     index_1 = email.find("@")
-     index_2 = email.find(".")
-     if index_2 > index_1:
-          return True
-     else:
-          return False
-     
+    index_1 = email.find("@")
+    index_2 = email.find(".")
+    if index_2 > index_1 + 1:  
+        return True
+    return False
+
 def register_user(name, email, password, role):
-     
-     #starting with input validation
-     users = load_json("data/user.json")
+    users = load_json("data/users.json")
+    
+    if not is_valid_email(email):
+        raise ValueError("Invalid email format.")
+    
+    if any(u["email"] == email for u in users):
+        raise ValueError("This email already exists.")
+    
+    salt = os.urandom(16).hex()
+    hashed = hashlib.sha256((salt + password).encode()).hexdigest()
+    
+    user = {
+        "id": len(users) + 1,
+        "name": name,
+        "email": email,
+        "password_hash": hashed,   
+        "salt": salt,
+        "role": role,
+        #what does .iso format look like?
+        "created_at": datetime.now().isoformat()   
+    }
+    
+    users.append(user) 
+    #why do we need to save the entire list and not just the new thing to the list since it was already saved before?                         
+    save_json("data/users.json", users)         
+    print("User registered successfully.")
 
-     if not is_valid_email(email):
-          return
-     
-     if email in users:
-          return "This email address already exists. Please try a different address."
-     
-     #password hashing section
-     salt = os.urandom(16).hex()
-     hashed = hashlib.sha256((salt+password).encode()).hexdigest()
+def login_user(email, password):
+    users = load_json("data/users.json")
+    
+    match = next((user for user in users if user["email"] == email), None)
+    
+    if match is None:
+        raise ValueError("Email does not exist, please try again.")
+    
+    
+    new_hash = hashlib.sha256((match["salt"] + password).encode()).hexdigest()
+    
+    if new_hash == match["password_hash"]:    
+        return {
+            "id": match["id"],                
+            "name": match["name"],
+            "email": match["email"],
+            "role": match["role"]
+        }
+    else:
+        raise ValueError("Incorrect password, please try again!")
 
-     #creating a user dictionary
-     user = {
-          "name": name,
-          "email": email,
-          "hashed": hashed,
-          "salt": salt,
-          "role": role
-     }
 
-     save_json("data/user.json", user)
-
-def login_user(name, password, role):
-    pass
+        
+    
+         
      
