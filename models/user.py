@@ -1,5 +1,4 @@
-# Represents system users and roles
-
+# models/user.py
 import hashlib
 from models.person import Person
 
@@ -20,35 +19,34 @@ class User(Person):
         email: str,
         password: str,
         role: str,
-        region_id: str = None
+        region_id: str = None,
+        password_hashed: bool = False  # <-- new param
     ):
-        super().__init__(id, name)
+        super().__init__(id, name, email)
 
         if role not in self.VALID_ROLES:
             raise ValueError(
                 f"Invalid role. Must be one of {self.VALID_ROLES}")
 
-        self.email = email
-        self.password = password
+        # Only hash if password is not already hashed
+        if password_hashed:
+            self.password = password
+        else:
+            self.password = hashlib.sha256(password.encode()).hexdigest()
+
         self.role = role
         self.region_id = region_id
 
     def set_password(self, raw_password: str):
-        """
-        Hash and set the user's password.
-        """
+        """Hash and set the user's password."""
         self.password = hashlib.sha256(raw_password.encode()).hexdigest()
 
     def verify_password(self, raw_password: str) -> bool:
-        """
-        Verify a raw password against the stored hash.
-        """
+        """Verify a raw password against the stored hash."""
         return self.password == hashlib.sha256(raw_password.encode()).hexdigest()
 
     def to_dict(self) -> dict:
-        """
-        Convert user object to dictionary for JSON storage.
-        """
+        """Convert user object to dictionary for JSON storage."""
         return {
             "id": self.id,
             "name": self.name,
@@ -60,16 +58,15 @@ class User(Person):
 
     @classmethod
     def from_dict(cls, data: dict):
-        """
-        Create User object from dictionary.
-        """
+        """Create User object from dictionary (password is already hashed)."""
         return cls(
             id=data["id"],
             name=data["name"],
             email=data["email"],
             password=data["password"],
             role=data["role"],
-            region_id=data.get("region_id")
+            region_id=data.get("region_id"),
+            password_hashed=True  # <-- prevent double hashing
         )
 
     def __str__(self):

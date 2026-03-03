@@ -1,1 +1,42 @@
-[]
+[
+    {
+        "id": "d646c8fb-463f-431c-8914-1667656fe614",
+        "name": "ian",
+        "email": "ian@gmail.com",
+        "password": "98167c597eb5869d183beaea15ab74d6883ec70cca0a1a6983b07f3b9a751826",
+        "role": "community",
+        "region_id": null
+    },
+    {
+        "id": "33901087-7a9d-4b08-8ad2-7d1eb2755899",
+        "name": "Seth ",
+        "email": "seth@gmail.com",
+        "password": "bcbeef318e8d4a36049e12b8b98e072e4fe9e910f632dabfa9db31737c9c8aa0",
+        "role": "health_worker",
+        "region_id": null
+    },
+    {
+        "id": "cd7177fa-9a34-44c5-a240-dbfde24a65b2",
+        "name": "randy",
+        "email": "randy@gmail.com",
+        "password": "4a65cc45ea427d1ea5d2c8fe09296c4a9fd7b32ee385672f63e569577d37b566",
+        "role": "health_worker",
+        "region_id": null
+    },
+    {
+        "id": "1d1ed3c7-92a0-4f0b-890a-4aad16d7bdda",
+        "name": "Koech",
+        "email": "koech@gmail.com",
+        "password": "2ba3f6954bcc29007d6a48f01099f9d6eb54a286db1d4a9cbe0eb94b66aa7bdf",
+        "role": "health_worker",
+        "region_id": null
+    },
+    {
+        "id": "6c7e119e-704f-4d94-be1f-184b3e9c7df8",
+        "name": "Milkah",
+        "email": "milkah@gmail.com",
+        "password": "e3730830f77c5e55f59f06ee8c5c1f031820a7cee57373e0f07639b2d6ed8e9d",
+        "role": "admin",
+        "region_id": null
+    }
+]

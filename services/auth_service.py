@@ -18,7 +18,6 @@ class AuthService:
     Handles authentication logic:
     - User registration
     - User login
-    - Password hashing
     - Admin user management (delete/update role)
     """
 
@@ -44,10 +43,7 @@ class AuthService:
 
     def _find_user(self, user_id: str):
         """Helper: find a user by ID."""
-        for user in self.users:
-            if user.id == user_id:
-                return user
-        return None
+        return next((user for user in self.users if user.id == user_id), None)
 
     # ----------------------------
     # Public Methods
@@ -70,7 +66,7 @@ class AuthService:
             role = input("Enter role (community/health_worker/admin): ")
             validate_role(role)
 
-            # Create user and hash password
+            # Create user (password is hashed in User.__init__)
             new_user = User(
                 id=str(uuid.uuid4()),
                 name=name,
@@ -78,7 +74,6 @@ class AuthService:
                 password=password,
                 role=role
             )
-            new_user.set_password(password)
 
             self.users.append(new_user)
             self._save_users()

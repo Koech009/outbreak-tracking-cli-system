@@ -29,17 +29,16 @@ def test_register_and_login_success(auth_service, monkeypatch):
 
 def test_register_duplicate_email(auth_service, monkeypatch, capsys):
     # First registration
-    inputs = iter(["Bob", "bob@example.com", "Pass123", "admin"])
+    inputs = iter(["Bob", "bob@example.com", "StrongPass1", "admin"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     auth_service.register()
 
     # Attempt duplicate registration
-    inputs = iter(["Bob", "bob@example.com", "Pass123", "admin"])
+    inputs = iter(["Bob", "bob@example.com", "StrongPass1", "admin"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     auth_service.register()
 
     captured = capsys.readouterr()
-
     assert "Email already exists" in captured.out
 
 
