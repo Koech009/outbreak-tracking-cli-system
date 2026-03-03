@@ -1,4 +1,3 @@
-# models/case.py
 # Represents a disease outbreak case
 
 class Case:
@@ -13,6 +12,7 @@ class Case:
     - symptoms: list of reported symptoms (community user)
     - possible_disease: suspected disease (community user)
     - confirmed_disease: verified disease (health worker)
+    - notes: optional notes for both community and health worker entries
     - classification_status: outbreak classification (suspected, confirmed, discarded)
     - patient_status: patient outcome (under_treatment, recovered, deceased)
     """
@@ -32,7 +32,8 @@ class Case:
         patient_status: str = "under_treatment",
         symptoms=None,
         possible_disease=None,
-        confirmed_disease=None
+        confirmed_disease=None,
+        notes=None
     ):
         if classification_status not in self.VALID_CLASSIFICATIONS:
             raise ValueError(
@@ -54,12 +55,12 @@ class Case:
         self.symptoms = symptoms or []
         self.possible_disease = possible_disease
         self.confirmed_disease = confirmed_disease
+        self.notes = notes
 
-
+    # ----------------------------
     # Helper Methods
-
+    # ----------------------------
     def update_classification(self, new_status: str):
-        #Update outbreak classification status.
         if new_status not in self.VALID_CLASSIFICATIONS:
             raise ValueError(
                 f"Invalid classification status. Must be one of {self.VALID_CLASSIFICATIONS}"
@@ -67,7 +68,6 @@ class Case:
         self.classification_status = new_status
 
     def update_patient_status(self, new_status: str):
-        #Update patient outcome status.
         if new_status not in self.VALID_PATIENT_STATUSES:
             raise ValueError(
                 f"Invalid patient status. Must be one of {self.VALID_PATIENT_STATUSES}"
@@ -75,14 +75,15 @@ class Case:
         self.patient_status = new_status
 
     def confirm_disease(self, disease_name: str):
-        #Health worker confirms suspected disease.
         if not disease_name:
             raise ValueError("Confirmed disease name cannot be empty.")
         self.confirmed_disease = disease_name
         self.classification_status = "confirmed"
 
+    # ----------------------------
+    # Serialization
+    # ----------------------------
     def to_dict(self) -> dict:
-        #Convert Case object to dictionary for JSON storage.
         return {
             "id": self.id,
             "patient_name": self.patient_name,
@@ -95,11 +96,11 @@ class Case:
             "symptoms": self.symptoms,
             "possible_disease": self.possible_disease,
             "confirmed_disease": self.confirmed_disease,
+            "notes": self.notes
         }
 
     @classmethod
     def from_dict(cls, data: dict):
-        #Recreate Case object from stored dictionary.
         return cls(
             id=data["id"],
             patient_name=data["patient_name"],
@@ -113,6 +114,7 @@ class Case:
             symptoms=data.get("symptoms", []),
             possible_disease=data.get("possible_disease"),
             confirmed_disease=data.get("confirmed_disease"),
+            notes=data.get("notes")
         )
 
     def __str__(self):
@@ -122,5 +124,6 @@ class Case:
             f"Possible: {self.possible_disease or 'N/A'}, "
             f"Confirmed: {self.confirmed_disease or 'N/A'}, "
             f"Classification: {self.classification_status}, "
-            f"Patient Status: {self.patient_status} ({self.date_reported})"
+            f"Patient Status: {self.patient_status} ({self.date_reported}), "
+            f"Notes: {self.notes or 'N/A'}"
         )
