@@ -1,62 +1,144 @@
+# Handles user registration, login, and password hashing.
+
+import uuid
+from models.user import User
 from utils.file_handler import load_json, save_json
-import hashlib
-import os
-from datetime import datetime
+from utils.validators import (
+    validate_non_empty,
+    validate_email,
+    validate_password_strength,
+    validate_role
+)
+
+USERS_FILE = "data/users.json"
 
 
-def is_valid_email(email):
-    index_1 = email.find("@")
-    index_2 = email.find(".")
-    if index_2 > index_1 + 1:
-        return True
-    return False
+class AuthService:
+    """
+    Handles authentication logic:
+    - User registration
+    - User login
+    - Password hashing
+    - Admin user management (delete/update role)
+    """
 
+    def __init__(self):
+        self.users = self._load_users()
 
-def register_user(name, email, password, role):
-    users = load_json("data/users.json")
+    # ----------------------------
+    # Internal Utility Methods
+    # ----------------------------
+    def _load_users(self):
+        """Load users from JSON file and convert to User objects."""
+        data = load_json(USERS_FILE)
+        return [User.from_dict(user) for user in data]
 
-    if not is_valid_email(email):
-        raise ValueError("Invalid email format.")
+    def _save_users(self):
+        """Save current users list to JSON file."""
+        data = [user.to_dict() for user in self.users]
+        save_json(USERS_FILE, data)
 
-    if any(u["email"] == email for u in users):
-        raise ValueError("This email already exists.")
+    def _email_exists(self, email: str) -> bool:
+        """Check if email is already registered."""
+        return any(user.email == email for user in self.users)
 
-    salt = os.urandom(16).hex()
-    hashed = hashlib.sha256((salt + password).encode()).hexdigest()
+    def _find_user(self, user_id: str):
+        """Helper: find a user by ID."""
+        for user in self.users:
+            if user.id == user_id:
+                return user
+        return None
 
-    user = {
-        "id": len(users) + 1,
-        "name": name,
-        "email": email,
-        "password_hash": hashed,
-        "salt": salt,
-        "role": role,
-        # what does .iso format look like?
-        "created_at": datetime.now().isoformat()
-    }
+    # ----------------------------
+    # Public Methods
+    # ----------------------------
+    def register(self):
+        """Register a new user with validation."""
+        try:
+            name = input("Enter name: ")
+            validate_non_empty(name, "Name")
 
-    users.append(user)
-    # why do we need to save the entire list and not just the new thing to the list since it was already saved before?
-    save_json("data/users.json", users)
-    print("User registered successfully.")
+            email = input("Enter email: ")
+            validate_email(email)
 
+            if self._email_exists(email):
+                raise ValueError("Email already exists.")
 
-def login_user(email, password):
-    users = load_json("data/users.json")
+            password = input("Enter password: ")
+            validate_password_strength(password)
 
-    match = next((user for user in users if user["email"] == email), None)
+            role = input("Enter role (community/health_worker/admin): ")
+            validate_role(role)
 
-    if match is None:
-        raise ValueError("Email does not exist, please try again.")
+            # Create user and hash password
+            new_user = User(
+                id=str(uuid.uuid4()),
+                name=name,
+                email=email,
+                password=password,
+                role=role
+            )
+            new_user.set_password(password)
 
-    new_hash = hashlib.sha256((match["salt"] + password).encode()).hexdigest()
+            self.users.append(new_user)
+            self._save_users()
+            print(
+                f"✅ User registered successfully. ID: {new_user.id}, Role: {new_user.role}")
 
-    if new_hash == match["password_hash"]:
-        return {
-            "id": match["id"],
-            "name": match["name"],
-            "email": match["email"],
-            "role": match["role"]
-        }
-    else:
-        raise ValueError("Incorrect password, please try again!")
+        except ValueError as e:
+            print(f"❌ Registration failed: {e}")
+
+    def login(self):
+        """Authenticate user. Returns User object if successful."""
+        try:
+            email = input("Enter email: ")
+            password = input("Enter password: ")
+
+            for user in self.users:
+                if user.email == email and user.verify_password(password):
+                    print("✅ Login successful.")
+                    print(f"Name: {user.name}")
+                    print(f"User ID: {user.id}")
+                    print(f"Role: {user.role}")
+                    return user
+
+            raise ValueError("Invalid email or password.")
+
+        except ValueError as e:
+            print(f"❌ Login failed: {e}")
+            return None
+
+    def delete_user(self):
+        """Admin deletes a user by ID."""
+        try:
+            user_id = input("Enter User ID to delete: ")
+            user = self._find_user(user_id)
+            if not user:
+                raise ValueError("User not found.")
+
+            self.users = [u for u in self.users if u.id != user_id]
+            self._save_users()
+            print(
+                f"✅ User '{user.name}' (Role: {user.role}) deleted successfully.")
+
+        except ValueError as e:
+            print(f"❌ Deletion failed: {e}")
+
+    def update_user_role(self):
+        """Admin updates a user's role."""
+        try:
+            user_id = input("Enter User ID to update role: ")
+            new_role = input(
+                "Enter new role (community/health_worker/admin): ")
+            validate_role(new_role)
+
+            user = self._find_user(user_id)
+            if not user:
+                raise ValueError("User not found.")
+
+            user.role = new_role
+            self._save_users()
+            print(f"✅ User '{user.name}' role updated to {new_role}.")
+
+        except ValueError as e:
+            print(f"❌ Update failed: {e}")
