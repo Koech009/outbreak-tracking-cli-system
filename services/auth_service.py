@@ -60,6 +60,11 @@ class AuthService:
             if self._email_exists(email):
                 raise ValueError("Email already exists.")
 
+            # Show password requirements
+
+            print(
+                "⚠️ Password must be at least 8 chars, with uppercase, lowercase, number, and symbol.")
+
             password = input("Enter password: ")
             validate_password_strength(password)
 

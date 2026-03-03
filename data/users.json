@@ -38,5 +38,13 @@
         "password": "e3730830f77c5e55f59f06ee8c5c1f031820a7cee57373e0f07639b2d6ed8e9d",
         "role": "admin",
         "region_id": null
+    },
+    {
+        "id": "27548956-1acf-44c9-866a-7dca20b31f2a",
+        "name": "solomon",
+        "email": "solo@gmail.com",
+        "password": "715b5522acfff60d0c8169c5ee5d4fbee77aa417f8966cdd370f48468a22d664",
+        "role": "admin",
+        "region_id": null
     }
 ]
