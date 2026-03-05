@@ -29,5 +29,21 @@
         "possible_disease": null,
         "confirmed_disease": "Covid 19",
         "notes": "labs came -ve for covid"
+    },
+    {
+        "id": "8c8d830e-bbc0-40cb-a756-60ebf201f11a",
+        "patient_name": "ian",
+        "age": 22,
+        "region_id": "47",
+        "reported_by": "a7aca772-8645-4d19-a95c-9a9bac8587b9",
+        "date_reported": "2026-03-03",
+        "classification_status": "confirmed",
+        "patient_status": "under_treatment",
+        "symptoms": [
+            "difficulty in breathing"
+        ],
+        "possible_disease": null,
+        "confirmed_disease": "ebola",
+        "notes": "we received a positive match for ebola from the lab"
     }
 ]

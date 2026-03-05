@@ -46,5 +46,29 @@
         "password": "715b5522acfff60d0c8169c5ee5d4fbee77aa417f8966cdd370f48468a22d664",
         "role": "admin",
         "region_id": null
+    },
+    {
+        "id": "a7aca772-8645-4d19-a95c-9a9bac8587b9",
+        "name": "george",
+        "email": "george@gmail.com",
+        "password": "9a2ebe00c423f171938d1a7199cc0c327f1572979bc485e1e305ba733c7fd758",
+        "role": "community",
+        "region_id": null
+    },
+    {
+        "id": "e1e089ba-a660-4a9b-a1f6-c92e3feb4997",
+        "name": "mwangi",
+        "email": "mwangi@gmail.com",
+        "password": "533414e85a53f61a2cda82f6cf53fd0852d59cdbe155540757b36c5c3bae6653",
+        "role": "health_worker",
+        "region_id": null
+    },
+    {
+        "id": "bd6f327d-ba55-4473-a131-78db6e48f443",
+        "name": "lydia",
+        "email": "lydia@gmail.com",
+        "password": "18b2c1ae2efce4998900820653738a19568f812c2d6e4f613d4fe1237e44c4a4",
+        "role": "admin",
+        "region_id": null
     }
 ]

@@ -1,11 +1,32 @@
+# Virtual environment
 venv/
+.venv/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+
+# Logs
 *.log
+
+# Environment variables
 .env
+
+# Testing
 .pytest_cache/
+.coverage
+
+# IDE
 .idea/
 .vscode/
+
+# Databases
 *.sqlite3
-milkah's_thoughts.md
-milkah's drafts
+
+# CLI runtime data
+data/*.json
+
+# Personal notes
+milkahs_thoughts.md
+milkah_drafts.md
